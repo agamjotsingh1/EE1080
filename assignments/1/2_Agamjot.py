@@ -1,35 +1,43 @@
 import sys
 import pandas as pd
-from math import sqrt
-import utils
+from math import sqrt, log
 import matplotlib.pyplot as plt
 
+# Converts a uniform random sample to a bernoulli random sample
+def uniform_to_bernoulli(uniform_rv, p):
+    if 0 < uniform_rv < p: # bin with size p and 1 - p
+        return 1
+    else:
+        return 0
+
+# Converts a uniform random sample to a exponential random sample
+def uniform_to_exp(uniform_rv, lam):
+    if uniform_rv == 1: return 0
+    return -log(1 - uniform_rv)/lam
+
+def uniform_to_custom_cdfx(uniform_rv):
+    '''
+    Transforms a uniform random variable into the custom CDFX distribution.
+
+    If 0 <= uniform_x <= 1/3, it returns sqrt(3 * uniform_rv)
+    If 2/3 <= uniform_rv <= 1, it returns 6 * uniform_rv - 2
+    Otherwise return 2
+    '''
+    if 0 <= uniform_rv <= 1/3:
+        return sqrt(3 * uniform_rv)
+    elif 2/3 <= uniform_rv <= 1:
+        return 6 * uniform_rv - 2
+    else:
+        return 2  # Anything in (1/3, 2/3) gets mapped to 2
+
 def process_csv(file_path):
-    """
-    Reads a CSV file and returns its contents as a DataFrame.
-    If there's an error (e.g., file not found or incorrect format), it prints an error message.
-    """
+    # Read and display the CSV file
     try:
         df = pd.read_csv(file_path, skiprows=0)
         print(f"Successfully read {file_path}!\n")
         return df
     except Exception as e:
         print(f"Error reading CSV file: {e}")
-
-def uniform_to_custom_cdfx(uniform_rv):
-    """
-    Transforms a uniform random variable into a custom CDFX distribution.
-    The mapping follows a piecewise function:
-      - If 0 <= x <= 1/3, it returns sqrt(3x)
-      - If 2/3 <= x <= 1, it returns 6x - 2
-      - Otherwise, it returns 0
-    """
-    if 0 <= uniform_rv <= 1/3:
-        return sqrt(3 * uniform_rv)
-    elif 2/3 <= uniform_rv <= 1:
-        return 6 * uniform_rv - 2
-    else:
-        return 0  # Anything in (1/3, 2/3) gets mapped to 0
 
 if __name__ == "__main__":
     # Print the number of arguments received
@@ -56,6 +64,8 @@ if __name__ == "__main__":
     N = len(uniform_samples)
     print(f"Total samples (N): {N}")
 
+    assert mode_value == 0 || mode_value == 1 || mode_value == 2, "Invalid mode value"
+
     # If mode is 0 or 1, we need a third argument (either p or lambda)
     if mode_value == 0:
         assert n >= 3, "Mode 0 requires a probability value (p)!"
@@ -65,14 +75,15 @@ if __name__ == "__main__":
         p_str = str(p).strip("0").replace(".", "p")  # Format filename-friendly p value
 
         # Convert uniform samples to Bernoulli samples (0 or 1 based on p)
-        bernoulli_samples = uniform_samples.map(lambda x: utils.uniform_to_bernoulli(x, p))
+        bernoulli_samples = uniform_samples.map(lambda x: uniform_to_bernoulli(x, p))
         bernoulli_samples.rename(columns={'Uniform Samples': 'Bernoulli Samples'}, inplace=True)
         
         # Save results to a new CSV file
         bernoulli_samples.to_csv(f"Bernoulli_{p_str}.csv")
+        bernoulli_mean = bernoulli_samples.mean()
 
         # Print the mean of the Bernoulli samples
-        print(f"Mean of Bernoulli samples: {bernoulli_samples.mean()['Bernoulli Samples']}")
+        print(f"Mean of Bernoulli samples: {round(bernoulli_mean, 3)['Bernoulli Samples']}")
 
     elif mode_value == 1:
         assert n >= 3, "Mode 1 requires a lambda value!"
@@ -82,14 +93,15 @@ if __name__ == "__main__":
         lam_str = str(lam).strip("0").replace(".", "p")  # Format filename-friendly lambda value
 
         # Convert uniform samples to exponential samples
-        exp_samples = uniform_samples.map(lambda x: utils.uniform_to_exp(x, lam))
+        exp_samples = uniform_samples.map(lambda x: uniform_to_exp(x, lam))
         exp_samples.rename(columns={'Uniform Samples': 'Exponential Samples'}, inplace=True)
         
         # Save results to a new CSV file
         exp_samples.to_csv(f"Exponential_{lam_str}.csv")
+        print(round(exp_samples.mean()['Exponential Samples'], 3))
 
         # Plot a histogram of the generated exponential samples
-        plt.hist(exp_samples, bins=int(sqrt(N)), rwidth=0.7, label=f"Exponential Samples, Bins = {int(sqrt(N))}")
+        plt.hist(exp_samples, bins=int(sqrt(N)), label=f"Exponential Samples, Bins = {int(sqrt(N))}")
         plt.legend()
         plt.show()
 
@@ -106,6 +118,6 @@ if __name__ == "__main__":
         print(f"Number of times 2 appears in CDFX samples: {count_2}")
 
         # Plot a histogram of the CDFX-transformed samples
-        plt.hist(cdfx_samples, bins=int(sqrt(N)), rwidth=0.7, label=f"CDFX Samples, Bins = {int(sqrt(N))}")
+        plt.hist(cdfx_samples, bins=int(sqrt(N)), label=f"CDFX Samples, Bins = {int(sqrt(N))}")
         plt.legend()
         plt.show()
