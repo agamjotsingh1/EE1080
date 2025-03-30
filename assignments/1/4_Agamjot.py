@@ -8,7 +8,7 @@ random.seed(42) # Set seed for reproducibility
 # Get the mode and N value from CLI arguments
 mode, N = int(sys.argv[1]), int(sys.argv[2])
 assert N > 0, "N should be greater than 0"
-assert mode == 0 || mode == 1 || mode == 2, "Invalid mode provided"
+assert mode == 0 or mode == 1 or mode == 2, "Invalid mode provided"
 
 if mode == 0:
     '''
@@ -42,6 +42,9 @@ if mode == 0:
 
     print("Fraction of chord length >= sqrt(3) -> ", fav/N)
     plt.hist(X_samples, bins=int(np.sqrt(N))) # Plot the histgram with bins as sqrt(N) rule
+    plt.xlabel("Chord Length")
+    plt.ylabel("Frequency")
+    plt.title("Mode 0")
     plt.show()
 
 elif mode == 1:
@@ -76,6 +79,9 @@ elif mode == 1:
 
     print("Fraction of chord length >= sqrt(3) -> ", fav/N)
     plt.hist(X_samples, bins=int(np.sqrt(N)))  # Plot the histgram with bins as sqrt(N) rule
+    plt.xlabel("Chord Length")
+    plt.ylabel("Frequency")
+    plt.title("Mode 1")
     plt.show()
 
 elif mode == 2:
@@ -115,4 +121,7 @@ elif mode == 2:
 
     print("Fraction of chord length >= sqrt(3) -> ", fav/N)
     plt.hist(Z_samples, bins=int(np.sqrt(N)))
+    plt.xlabel("Chord Length")
+    plt.ylabel("Frequency")
+    plt.title("Mode 2")
     plt.show()

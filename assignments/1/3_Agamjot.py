@@ -59,12 +59,12 @@ def gen_k_subsets(n, k, N):
     return I_to_decimal(I)
 
 n, k, N = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]) # Accept arguments from CLI
-assert n > 0 && k > 0 && N > 0, "Negative parameters not allowed"
+assert n > 0 and k >= 0 and N >= 0, "Negative parameters not allowed"
 assert k <= n, "k should always be less than or equal to n"
 
 distribution = gen_k_subsets(n, k, N)
 plt.hist(distribution, bins=2**n, range=(0, 2**n)) # Number of bins 
 plt.xlabel("Decimal representation of subsets")
 plt.ylabel("Frequency")
-plt.title("Generating k subsets for n")
+plt.title(f"Generating {k} (k) subsets for {n} (n)")
 plt.show()

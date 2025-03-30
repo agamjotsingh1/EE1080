@@ -64,7 +64,7 @@ if __name__ == "__main__":
     N = len(uniform_samples)
     print(f"Total samples (N): {N}")
 
-    assert mode_value == 0 || mode_value == 1 || mode_value == 2, "Invalid mode value"
+    assert mode_value == 0 or mode_value == 1 or mode_value == 2, "Invalid mode value"
 
     # If mode is 0 or 1, we need a third argument (either p or lambda)
     if mode_value == 0:
@@ -72,6 +72,8 @@ if __name__ == "__main__":
         
         # Read the probability value
         p = float(sys.argv[3])
+
+        assert p > 0 and p < 1, "Probability should be between 0 and 1"
         p_str = str(p).strip("0").replace(".", "p")  # Format filename-friendly p value
 
         # Convert uniform samples to Bernoulli samples (0 or 1 based on p)
@@ -80,16 +82,18 @@ if __name__ == "__main__":
         
         # Save results to a new CSV file
         bernoulli_samples.to_csv(f"Bernoulli_{p_str}.csv")
-        bernoulli_mean = bernoulli_samples.mean()
+        bernoulli_mean = round(bernoulli_samples.mean()['Bernoulli Samples'], 3)
 
         # Print the mean of the Bernoulli samples
-        print(f"Mean of Bernoulli samples: {round(bernoulli_mean, 3)['Bernoulli Samples']}")
+        print(bernoulli_mean)
 
     elif mode_value == 1:
         assert n >= 3, "Mode 1 requires a lambda value!"
         
         # Read the lambda value
         lam = float(sys.argv[3])
+        assert lam > 0, "Lambda is always greater than 0"
+
         lam_str = str(lam).strip("0").replace(".", "p")  # Format filename-friendly lambda value
 
         # Convert uniform samples to exponential samples
@@ -103,6 +107,9 @@ if __name__ == "__main__":
         # Plot a histogram of the generated exponential samples
         plt.hist(exp_samples, bins=int(sqrt(N)), label=f"Exponential Samples, Bins = {int(sqrt(N))}")
         plt.legend()
+        plt.xlabel("Exponential Samples")
+        plt.ylabel("Freqeuncy")
+        plt.title(f"Exponential Samples from Uniform Samples with $\\lambda$ = {lam}")
         plt.show()
 
     else:
@@ -115,9 +122,12 @@ if __name__ == "__main__":
 
         # Count how many times the value 2 appears in the transformed samples
         count_2 = cdfx_samples['CDFX Samples'].value_counts().get(2.0, 0)
-        print(f"Number of times 2 appears in CDFX samples: {count_2}")
+        print(count_2)
 
         # Plot a histogram of the CDFX-transformed samples
         plt.hist(cdfx_samples, bins=int(sqrt(N)), label=f"CDFX Samples, Bins = {int(sqrt(N))}")
         plt.legend()
+        plt.xlabel("CDFX Samples")
+        plt.ylabel("Freqeuncy")
+        plt.title("CDFX Samples from Uniform Samples")
         plt.show()
