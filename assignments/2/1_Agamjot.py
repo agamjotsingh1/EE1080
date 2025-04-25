@@ -53,7 +53,7 @@ def gaussian_plot(mode, n, param):
     def f(x):
         return np.exp(-(x - mean)**2/(2*variance))/(np.sqrt(2*np.pi*variance))
 
-    offset = 2*n*variance if mode != 2 else n*variance/4
+    offset = 2*n*variance if mode != 2 else np.sqrt(n*variance)/2
     x = np.arange(mean - offset, mean + offset, 0.001)
     y = f(x)
 

@@ -1,70 +1,82 @@
-import random
 import sys
-import matplotlib.pyplot as plt
+import pandas as pd
 import numpy as np
-from math import sqrt
+import matplotlib.pyplot as plt
 
-random.seed(42) # Sets the seed for reproducibility
+# Set the seed for reproducibility
+# random.seed(42)
 
-# Convert I matrix to a decimal representation
-# Columns in I are the binary representation
-def I_to_decimal(I):
-    n = len(I)
-    N = len(I[0])
+def process_csv(file_path):
+    # Read and display the CSV file
+    try:
+        df = pd.read_csv(file_path, skiprows=0)
+        print("Reading contents of ",  file_path, ":\n")
+        return df;
+    except Exception as e:
+        print("Error reading CSV file: {e}")
 
-    decimal_I = [] # Decimal I matrix, array of size (N x 1)
+def mmse_estimator(y, sigma_sq, mu_x, var_x):
+    estimator = mu_x/var_x
+    denom = 1/var_x
 
-    for j in range(N):
-        decimal = 0
-        
-        # Converting the column to 
-        for i in range(n):
-            if(I[i][j]):
-                decimal += 2**i
+    for i in range(len(y)):
+        estimator += y[i]/sigma_sq[i]
+        denom += 1/sigma_sq[i]
 
-        decimal_I.append(decimal)
+    return estimator/denom
 
-    return decimal_I
+if __name__ == "__main__":        
+    # total arguments
+    n = len(sys.argv)
+    print("Total arguments passed:", n)
 
-# Generates a U matrix of size (n x N)
-# with uniform random variable sample as each entry
-def gen_U(n, N):
-    U = [[random.uniform(0, 1) for _ in range(N)] for _ in range(n)]
-    return U
+    # Arguments passed
+    print("\nName of Python script:", sys.argv[0])
 
-# Generates the I Matrix from the given U matrix
-# k subsets are represented as binary representation in columns of I
-def gen_I(U, k):
-    n = len(U)
-    N = len(U[0])
+    print("\nArguments passed:",n)
+    assert(n >= 2)
 
-    # Creates a matrix of (n x N) with all entries as 0
-    I = [[0 for _ in range(N)] for _ in range(n)]
+    mu_x = int(sys.argv[1]);
+    print("mean of X", mu_x)
 
-    # Applying the algorithm given in the problem statement
-    for j in range(N):
-        for i in range(n):
-            prev_sum = 0
-            for a in range(i):
-                prev_sum += I[a][j]
+    var_x = int(sys.argv[2]);
+    print("Variance of X", var_x)
 
-            I[i][j] = 1 if U[i][j] <= (k - prev_sum)/(n - i) else 0
+    #read the mmse samples file
+    input_fn= sys.argv[3];
+    print(input_fn)
 
-    return I
+    mmse_samples = process_csv(input_fn);
+    #if mmse_samples == None: exit(1);
+    print(mmse_samples)
 
-# Finally generate the decimal representation of selected k subsets of n
-def gen_k_subsets(n, k, N):
-    U = gen_U(n, N)
-    I = gen_I(U, k)
-    return I_to_decimal(I)
+    N = len(mmse_samples);
+    print("N=",N);
 
-n, k, N = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3]) # Accept arguments from CLI
-assert n > 0 and k >= 0 and N >= 0, "Negative parameters not allowed"
-assert k <= n, "k should always be less than or equal to n"
+    mmse_samples_array = mmse_samples.to_numpy();
+    print(mmse_samples_array)
 
-distribution = gen_k_subsets(n, k, N)
-plt.hist(distribution, bins=2**n, range=(0, 2**n)) # Number of bins 
-plt.xlabel("Decimal representation of subsets")
-plt.ylabel("Frequency")
-plt.title(f"Generating {k} (k) subsets for {n} (n)")
-plt.show()
+    # prints below 0th sample value
+    print(mmse_samples_array[0][0])
+
+    #prints below sigmasquare corresponding to 0th sample
+    print(mmse_samples_array[0][1])
+
+    # For plotting the MMSE estimates vs N
+    estimates = []
+    x_axis = []
+
+    for i in range(1, N + 1):
+        y = mmse_samples_array[:i, 0]       # First i samples
+        sigma_sq = mmse_samples_array[:i, 1]  # First i variances
+        est = mmse_estimator(y, sigma_sq, mu_x, var_x)
+        estimates.append(est)
+        x_axis.append(i)
+
+    # Create scatter plot
+    plt.scatter(x_axis, estimates, color='#4169E1', label='MMSE Estimate of X')
+    plt.xlabel('Number of Observations (N)')
+    plt.ylabel('MMSE Estimate of X')
+    plt.title('MMSE Estimate of X vs N')
+    plt.legend(loc="lower right")
+    plt.show()
