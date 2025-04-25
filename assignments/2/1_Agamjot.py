@@ -5,7 +5,7 @@ from math import log, exp, sqrt, pi
 import matplotlib.pyplot as plt
 
 # Set the seed for reproducibility
-# random.seed(42)
+np.random.seed(1)
 
 def gen_samples(mode, n, N, param):
     if mode == 0:
@@ -17,26 +17,11 @@ def gen_samples(mode, n, N, param):
     else:
         return np.zeros((N, n))
 
-    '''
-    X = np.zeros((N, n));
-
-    for i in range(N):
-        for j in range(n):
-            if mode == 0:
-                X[i][j] = bernoulli_rv(param) 
-            elif mode == 1:
-                X[i][j] = random.uniform(0, 1)
-            elif mode == 2:
-                X[i][j] = exponential_rv(param) 
-
-    return X
-    '''
-
 def gaussian_plot(mode, n, param):
     mean = 0 
     variance = 0
 
-    if mode == 0:
+    if mode == 0: # param = p
         mean = param
         variance = param*(1 - param)/n
 
@@ -53,19 +38,17 @@ def gaussian_plot(mode, n, param):
     def f(x):
         return np.exp(-(x - mean)**2/(2*variance))/(np.sqrt(2*np.pi*variance))
 
-    offset = 2*n*variance if mode != 2 else np.sqrt(n*variance)/2
+    offset = 4*np.sqrt(variance)
     x = np.arange(mean - offset, mean + offset, 0.001)
     y = f(x)
 
     return x, y
 
 mode, n, N = [int(arg) for arg in sys.argv[1:4]]
-param = float(sys.argv[4])
+param = float(sys.argv[4]) if mode != 1 else 0
 X = gen_samples(mode, n, N, param)
 row_averages =  [sum(X[i])/n for i in range(N)]
-
-if mode == 0: plt.hist(row_averages, density=True, alpha=0.75, color="skyblue", label="Row Average Histogram")
-else: plt.hist(row_averages, density=True, bins = int(np.sqrt(N)), alpha=0.75, color="skyblue", label="Row Average Histogram")
+plt.hist(row_averages, density=True, bins = "auto", alpha=0.75, color="skyblue", label="Row Average Histogram")
 
 x, y = gaussian_plot(mode, n, param)
 plt.plot(x, y, color="black", label="Normal Plot")

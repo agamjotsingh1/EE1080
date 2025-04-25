@@ -1,11 +1,10 @@
-import random
 import sys
 import numpy as np
 from math import log, exp, sqrt, pi
 import matplotlib.pyplot as plt
 
 # Set the seed for reproducibility
-# random.seed(42)
+np.random.seed(69)
 
 def gen_sorted_sample_matrix(N):
     mat = np.random.uniform(0, 1, size=(N, 6))
@@ -17,7 +16,7 @@ def gen_sorted_sample_matrix(N):
 
 def gen_X(N):
     mat = gen_sorted_sample_matrix(N)
-    X = [mat[i][3] for i in range(N)]
+    X = mat[:, 3]
     return X
 
 def f_a(x):
@@ -39,7 +38,7 @@ def compare_densities(hist, bin_centers):
     else:
         print("b")
 
-N = 100000
+N = int(sys.argv[1])
 bin_edges = np.arange(0, 1 + 0.01, 0.01)
 
 X = gen_X(N)

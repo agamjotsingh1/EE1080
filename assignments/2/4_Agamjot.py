@@ -1,127 +1,52 @@
-import random
-import matplotlib.pyplot as plt
 import numpy as np
-import sys
+import scipy.stats as stats
+from scipy.linalg import eigh
+import matplotlib.pyplot as plt
 
-random.seed(42) # Set seed for reproducibility
+N = 1000
 
-# Get the mode and N value from CLI arguments
-mode, N = int(sys.argv[1]), int(sys.argv[2])
-assert N > 0, "N should be greater than 0"
-assert mode == 0 or mode == 1 or mode == 2, "Invalid mode provided"
+K = [[0.25, 0.3],
+     [0.3, 1.0]]
 
-if mode == 0:
-    '''
-    Mode 0
+M = np.array([0, 0])
 
-    Angle made by chord w.r.t a tangent at one fixed end is equally likely.
+X = stats.multivariate_normal.rvs(M, K, N)
 
-    Theta is a uniform RV from 0 to pi.
-    Chord is selected such that it makes angle theta with tangent at (0, 1).
-    '''
+eig_values, eig_vectors = eigh(K)
 
-    # Generate X from a uniform theta sample
-    # X -> Chord Length for a particular theta
-    def gen_X(theta):
-        return 2*np.sin(theta)
+D = np.diag(eig_values[::-1])
+U = eig_vectors[:, ::-1]
 
-    # Generate uniform theta from 0 to pi
-    def gen_uniform_theta():
-        return random.uniform(0, np.pi)
+A = U@(np.sqrt(D))
+S = np.random.normal(0, 1, size=(2, N))
 
-    fav = 0 # Favourable number of outputs
-    theta_samples = [ gen_uniform_theta() for _ in range(N)] # Generate N uniform theta samples 
-    X_samples = []
+X_samples = (A@S) + M[:, np.newaxis]
 
-    for theta in theta_samples:
-        X = gen_X(theta)
-        X_samples.append(X)
+x1 = np.arange(-2.5, 2.5, 0.01)
+x2 = np.arange(-3.5, 3.5, 0.01)
+X1, X2 = np.meshgrid(x1, x2)
+Xpos = np.empty(X1.shape + (2,))
+Xpos[:, :, 0] = X1
+Xpos[:, :, 1] = X2
 
-        if(X >= np.sqrt(3)): # Chord length is greater than root(3)
-            fav += 1
+F = stats.multivariate_normal.pdf(Xpos, M, K)
 
-    print("Fraction of chord length >= sqrt(3) -> ", fav/N)
-    plt.hist(X_samples, bins=int(np.sqrt(N))) # Plot the histgram with bins as sqrt(N) rule
-    plt.xlabel("Chord Length")
-    plt.ylabel("Frequency")
-    plt.title("Mode 0")
-    plt.show()
+# Create subplots
+fig, axs = plt.subplots(1, 2, figsize=(12, 5))
 
-elif mode == 1:
-    '''
-    Mode 1
+# First subplot for X
+axs[0].scatter(X[:, 0], X[:, 1], color="lightcoral", alpha=0.4, marker="x")
+axs[0].contour(x1, x2, F, cmap="viridis")
+axs[0].set_title('Multivariate Normal Samples (Direct)')
+axs[0].set_xlabel('y')
+axs[0].set_ylabel('x')
 
-    Distance of the chord from center is equally likely.
+# Second subplot for X_samples
+axs[1].scatter(X_samples[0], X_samples[1], color="skyblue", alpha=0.75, marker="x")
+axs[1].contour(x1, x2, F, cmap="plasma")
+axs[1].set_title('Multivariate Normal Samples (Eigen Decomposition)')
+axs[1].set_xlabel('y')
+axs[1].set_ylabel('x')
 
-    U -> distance of chord from center.
-    U is a uniform RV from 0 to 1.
-    '''
-
-    # Generate X from a uniform U sample
-    # X -> Chord Length for a particular U
-    def gen_X(U):
-        return 2*np.sqrt(1 - U*U)
-
-    # Generate uniform U from 0 to 1
-    def gen_uniform_U():
-        return random.uniform(0, 1)
-
-    fav = 0 # Favourable number of outputs 
-    U_samples = [gen_uniform_U() for _ in range(N)] # Generate N uniform U samples 
-    X_samples = []
-
-    for U in U_samples:
-        X = gen_X(U)
-        X_samples.append(X)
-
-        if(X >= np.sqrt(3)): # Chord length is greater than root(3)
-            fav += 1
-
-    print("Fraction of chord length >= sqrt(3) -> ", fav/N)
-    plt.hist(X_samples, bins=int(np.sqrt(N)))  # Plot the histgram with bins as sqrt(N) rule
-    plt.xlabel("Chord Length")
-    plt.ylabel("Frequency")
-    plt.title("Mode 1")
-    plt.show()
-
-elif mode == 2:
-    '''
-    Mode 2
-
-    Center of the chord is equally likely within circle.
-
-    U -> uniform RV from 0 to 1.
-    R -> distance of a randomly selected point (X, Y) on the circle from the center
-    Z -> length of chord length as a function of R
-    '''
-
-    # Generate R sample from uniform U sample
-    def gen_R(U):
-        return np.sqrt(U)
-
-    # Generate Z sample from R sample
-    def gen_Z(R):
-        return 2*np.sqrt(1 - R*R)
-
-    # Generate uniform U sample between 0 to 1
-    def gen_uniform_U():
-        return random.uniform(0, 1)
-
-    fav = 0 # Number of favourable outputs
-    U_samples = [gen_uniform_U() for _ in range(N)] # Generate N uniform U samples 
-
-    Z_samples = []
-    for U in U_samples:
-        R = gen_R(U)
-        Z = gen_Z(R)
-
-        Z_samples.append(Z)
-        if (Z >= np.sqrt(3)): # Chord length is greater than root(3)
-            fav += 1
-
-    print("Fraction of chord length >= sqrt(3) -> ", fav/N)
-    plt.hist(Z_samples, bins=int(np.sqrt(N)))
-    plt.xlabel("Chord Length")
-    plt.ylabel("Frequency")
-    plt.title("Mode 2")
-    plt.show()
+plt.tight_layout()
+plt.show()

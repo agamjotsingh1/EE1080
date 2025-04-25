@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Set the seed for reproducibility
-# random.seed(42)
+np.random.seed(69)
 
 def process_csv(file_path):
     # Read and display the CSV file
@@ -16,14 +16,18 @@ def process_csv(file_path):
         print("Error reading CSV file: {e}")
 
 def mmse_estimator(y, sigma_sq, mu_x, var_x):
-    estimator = mu_x/var_x
+    # finding estimator
+    # estimator = (mu_x/var_x + summation{y[i]/sigma_sq[i]}) / (1/var_x + summation{1/sigma_sq[i]})
+    numerator = mu_x/var_x
     denom = 1/var_x
 
     for i in range(len(y)):
-        estimator += y[i]/sigma_sq[i]
+        numerator += y[i]/sigma_sq[i]
         denom += 1/sigma_sq[i]
 
-    return estimator/denom
+    estimator = numerator/denom
+
+    return estimator
 
 if __name__ == "__main__":        
     # total arguments
@@ -66,11 +70,12 @@ if __name__ == "__main__":
     estimates = []
     x_axis = []
 
+    # Find estimator for i = 1, 2, .. N
     for i in range(1, N + 1):
         y = mmse_samples_array[:i, 0]       # First i samples
         sigma_sq = mmse_samples_array[:i, 1]  # First i variances
-        est = mmse_estimator(y, sigma_sq, mu_x, var_x)
-        estimates.append(est)
+        estimate = mmse_estimator(y, sigma_sq, mu_x, var_x)
+        estimates.append(estimate)
         x_axis.append(i)
 
     # Create scatter plot
