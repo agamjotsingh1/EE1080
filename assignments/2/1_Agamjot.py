@@ -1,4 +1,5 @@
 import random
+import sys
 import numpy as np
 from math import log, exp, sqrt, pi
 import matplotlib.pyplot as plt
@@ -58,11 +59,8 @@ def gaussian_plot(mode, n, param):
 
     return x, y
 
-mode = 2
-n = 100
-N = 100000
-param = 0.5
-
+mode, n, N = [int(arg) for arg in sys.argv[1:4]]
+param = float(sys.argv[4])
 X = gen_samples(mode, n, N, param)
 row_averages =  [sum(X[i])/n for i in range(N)]
 
