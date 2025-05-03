@@ -1,10 +1,6 @@
 import sys
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-
-# Set the seed for reproducibility
-np.random.seed(69)
 
 def process_csv(file_path):
     # Read and display the CSV file
@@ -44,6 +40,8 @@ if __name__ == "__main__":
     print("mean of X", mu_x)
 
     var_x = int(sys.argv[2]);
+
+    assert var_x >= 0, "Var_x should be greater than 0"
     print("Variance of X", var_x)
 
     #read the mmse samples file
@@ -60,10 +58,10 @@ if __name__ == "__main__":
     mmse_samples_array = mmse_samples.to_numpy();
     print(mmse_samples_array)
 
-    # prints below 0th sample value
+    # Prints below 0th sample value
     print(mmse_samples_array[0][0])
 
-    #prints below sigmasquare corresponding to 0th sample
+    # Prints below sigmasquare corresponding to 0th sample
     print(mmse_samples_array[0][1])
 
     # For plotting the MMSE estimates vs N
@@ -74,6 +72,7 @@ if __name__ == "__main__":
     for i in range(1, N + 1):
         y = mmse_samples_array[:i, 0]       # First i samples
         sigma_sq = mmse_samples_array[:i, 1]  # First i variances
+
         estimate = mmse_estimator(y, sigma_sq, mu_x, var_x)
         estimates.append(estimate)
         x_axis.append(i)

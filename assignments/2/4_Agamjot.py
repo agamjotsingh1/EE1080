@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 
 N = 1000
 
+M = np.array([0, 0])
+
 K = [[0.25, 0.3],
      [0.3, 1.0]]
-
-M = np.array([0, 0])
 
 X = stats.multivariate_normal.rvs(M, K, N)
 
@@ -38,15 +38,15 @@ fig, axs = plt.subplots(1, 2, figsize=(12, 5))
 axs[0].scatter(X[:, 0], X[:, 1], color="lightcoral", alpha=0.4, marker="x")
 axs[0].contour(x1, x2, F, cmap="viridis")
 axs[0].set_title('Multivariate Normal Samples (Direct)')
-axs[0].set_xlabel('y')
-axs[0].set_ylabel('x')
+axs[0].set_xlabel('x')
+axs[0].set_ylabel('y')
 
 # Second subplot for X_samples
 axs[1].scatter(X_samples[0], X_samples[1], color="skyblue", alpha=0.75, marker="x")
 axs[1].contour(x1, x2, F, cmap="plasma")
 axs[1].set_title('Multivariate Normal Samples (Eigen Decomposition)')
-axs[1].set_xlabel('y')
-axs[1].set_ylabel('x')
+axs[1].set_xlabel('x')
+axs[1].set_ylabel('y')
 
 plt.tight_layout()
 plt.show()
